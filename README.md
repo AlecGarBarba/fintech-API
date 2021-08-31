@@ -61,6 +61,7 @@ Por último, la carpeta "src" contendrá el código fuente del Back-end. el punt
 
 Test:
     Arranca el framework de pruebas, realiza todas las test suites, y se queda observando cambios en el código
+    
 Dev:
     Obtiene todas las variables de entorno de desarrollo de la carpeta config, y utiliza nodemon para hacer un restart con cualquier cambiod e código.
 
