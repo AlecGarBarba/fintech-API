@@ -22,7 +22,7 @@ Está prohibido copiar código de algún sitio web.
 Este proyecto fue creado y probado en una laptop corriendo Windows 10, con un procesador Intel core i5 8th Gen, y utilizando la versión de Node.js 16.7.0.
 
 
-## Estructuracion del proyecto
+## Estructuración del proyecto
 
 El proyecto cuenta con una serie de archivos para la configuración del servidor, así como diferentes directorios para mantener una organización a lo largo del desarrollo. Los archivos de configuración son:
 
