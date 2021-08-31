@@ -1,6 +1,5 @@
-import express from 'express';
+import express from 'express'; 
 
-//Llamada como función por si en el futuro es necesario agregar algún proceso asíncrono dentro del arranque.
 function main(): void {
     const app = express();
 
@@ -9,6 +8,5 @@ function main(): void {
     })
 
 };
-
 
 main();
