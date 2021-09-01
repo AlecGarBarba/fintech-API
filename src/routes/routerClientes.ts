@@ -101,7 +101,7 @@ router.get('/cuenta/transacciones', auth, async (req,res)=>{
         const cuentaFiltrada = cuentas.filter( cuenta => cuenta.id=== idCuenta );
         transacciones = cuentaFiltrada[0].transacciones
         transacciones = filtrarTransaccionesPorFecha(transacciones,inicio as string, fin as string);
-        res.status(201).send( transacciones );
+        res.status(200).send( transacciones );
     }else{
         res.status(400).send({"error": "Datos insuficientes"});
     }

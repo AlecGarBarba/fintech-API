@@ -43,14 +43,17 @@ router.post('/cliente',auth, async (req,res)=>{
     const usuario = await DataStorager.retornarUsuario(nombreUsuario);
     if(nombreCliente && rfc && curp && usuario){
         try{
+            if(usuario.retornarCliente(nombreCliente)){
+                return res.status(400).send({"Error": "Ya existe un cliente con ese nombre"})
+            } 
             usuario.agregarCliente(nombreCliente,rfc,curp); 
             await DataStorager.persistirUsuario(usuario);
-            res.status(201).send();
+            return res.status(201).send();
         }catch(e){
-            res.status(500).send({"error": `Error de servidor: ${e.message}`});
+            return res.status(500).send({"error": `Error de servidor: ${e.message}`});
         }
     }else{
-        res.status(400).send({"error": "Datos inválidos o faltantes para la creación de un nuevo cliente"});
+        return res.status(400).send({"error": "Datos inválidos o faltantes para la creación de un nuevo cliente"});
     }
 });
 
