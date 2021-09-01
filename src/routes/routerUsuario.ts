@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken';
 
 import DataStorager from "../models/DataStorager";
 import Usuario from "../models/Usuario"; 
+import Cliente from "../models/Cliente";
 
 import { auth } from '../middleware/auth';
-import Cliente from "../models/Cliente";
 
 const router = Router();
 
