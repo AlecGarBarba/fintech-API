@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 import DataStorager from "../models/DataStorager";
 import Usuario from "../models/Usuario"; 
 import Cliente from "../models/Cliente";
-
 import { auth } from '../middleware/auth';
+import { filtrarClientesPorFecha } from "../utils/utils";
 
 const router = Router();
 
@@ -34,7 +34,6 @@ router.post('/login', async (req,res)=>{
         return res.status(201).send({token});
     }
     return res.status(400).send({"error": "Usuario no encontrado"});
-
 });
 
 //Crear cliente
@@ -50,7 +49,6 @@ router.post('/cliente',auth, async (req,res)=>{
         }catch(e){
             res.status(500).send({"error": `Error de servidor: ${e.message}`});
         }
-        
     }else{
         res.status(400).send({"error": "Datos inválidos o faltantes para la creación de un nuevo cliente"});
     }
@@ -71,8 +69,7 @@ router.delete('/cliente',auth, async (req,res)=>{
         }
     }else{
         res.status(400).send({"error":"Usuario no encontrado"})
-    }
-
+    } 
 });
 
 //listarClientes
@@ -81,23 +78,11 @@ router.get('/cliente', auth, async (req,res)=>{
     const {inicio, fin} = req.query;  
     const usuario = await DataStorager.retornarUsuario(nombreUsuario) as Usuario;
     if(usuario){
-        let clientes: Cliente[] = usuario.listarClientes();
-        //inicio y fin 
-        if(inicio && fin){  
-            clientes = clientes.filter((cliente)=>{  
-                return new Date(cliente.fechaRegistro) >=new Date(''+inicio) && new Date(cliente.fechaRegistro) <= new Date(''+fin);
-            }); 
-        }else if(inicio){  
-            clientes = clientes.filter((cliente)=> new Date(cliente.fechaRegistro) >=new Date(''+inicio) ); 
-        }else if(fin){ 
-            clientes = clientes.filter((cliente)=> new Date(cliente.fechaRegistro) <=new Date(''+fin) ); 
-        }
+        let clientes: Cliente[] = usuario.listarClientes(); 
+        clientes = filtrarClientesPorFecha(clientes, inicio as string, fin as string);
         return res.status(200).send(clientes);
     }
     return res.status(400).send({"error": "Usuario no encontrado"});
-    
 });
-
-
 
 export default router;
