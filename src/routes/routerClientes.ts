@@ -17,8 +17,8 @@ router.get('/transacciones', ()=>{
 
 });
 
-//obtener 
-router.get('/cuenta')
+//obtener transacciones por cuenta
+router.get('/cuenta/transacciones')
 
 //Agregar transaccion específica al cliente.s
 router.post('/transaccion')
