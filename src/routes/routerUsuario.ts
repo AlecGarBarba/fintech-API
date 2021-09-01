@@ -5,6 +5,7 @@ import DataStorager from "../models/DataStorager";
 import Usuario from "../models/Usuario"; 
 
 import { auth } from '../middleware/auth';
+import Cliente from "../models/Cliente";
 
 const router = Router();
 
@@ -24,7 +25,7 @@ router.post('/', async (req,res)=>{
     }  
 });
 
-//Login, 
+//Login 
 router.post('/login', async (req,res)=>{
     const {nombre, password} = req.body;
     const usuario = await DataStorager.retornarUsuario(nombre);
@@ -75,14 +76,28 @@ router.delete('/cliente',auth, async (req,res)=>{
 });
 
 //listarClientes
-router.get('/clientes', ()=>{
-
+router.get('/clientes', auth, async (req,res)=>{
+    const nombreUsuario = req.params.nombreUsuario;
+    const {inicio, fin} = req.query;  
+    const usuario = await DataStorager.retornarUsuario(nombreUsuario) as Usuario;
+    if(usuario){
+        let clientes: Cliente[] = usuario.listarClientes();
+        //inicio y fin 
+        if(inicio && fin){  
+            clientes = clientes.filter((cliente)=>{  
+                return new Date(cliente.fechaRegistro) >=new Date(''+inicio) && new Date(cliente.fechaRegistro) <= new Date(''+fin);
+            }); 
+        }else if(inicio){  
+            clientes = clientes.filter((cliente)=> new Date(cliente.fechaRegistro) >=new Date(''+inicio) ); 
+        }else if(fin){ 
+            clientes = clientes.filter((cliente)=> new Date(cliente.fechaRegistro) <=new Date(''+fin) ); 
+        }
+        return res.status(200).send(clientes);
+    }
+    return res.status(400).send({"error": "Usuario no encontrado"});
+    
 });
 
-//obtener todas las transacciones del Usuario.
-router.get('/transacciones', ()=>{
-
-});
 
 
 export default router;
