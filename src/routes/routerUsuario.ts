@@ -76,7 +76,7 @@ router.delete('/cliente',auth, async (req,res)=>{
 });
 
 //listarClientes
-router.get('/clientes', auth, async (req,res)=>{
+router.get('/cliente', auth, async (req,res)=>{
     const nombreUsuario = req.params.nombreUsuario;
     const {inicio, fin} = req.query;  
     const usuario = await DataStorager.retornarUsuario(nombreUsuario) as Usuario;

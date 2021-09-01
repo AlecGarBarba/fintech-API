@@ -1,24 +1,25 @@
 import { Router } from 'express';
-import DataStorager from "../models/DataStorager";
-//import Usuario from "../models/Usuario"; 
-//import Cliente from "../models/Cliente";
-
+import DataStorager from "../models/DataStorager"; 
+import Cliente from "../models/Cliente"; 
+import Cuenta from '../models/Cuenta';
+import Transaccion from '../models/Transaccion';
 import { auth } from '../middleware/auth';
-import { ParametrosDeTransaccion, TipoDeTransaccion } from 'src/types/types';
+import { ParametrosDeTransaccion, TipoDeTransaccion } from '../types/types'; 
 
 
 const router = Router();
-
+// Agregar una cuenta nueva al cliente.
 router.post('/cuenta', auth, async (req,res)=>{
     const {nombreUsuario} = req.params;
     const {nombreCliente, tipoCuenta} = req.body;
     const usuario = await DataStorager.retornarUsuario(nombreUsuario);
-    if(usuario){
-        const cliente = usuario.retornarCliente(nombreCliente);
-        if(cliente){
-            cliente.agregarCuenta(tipoCuenta);
+    if(usuario){ 
+        const { rfc, curp, cuentas} = usuario.retornarCliente(nombreCliente) as Cliente;
+        if(rfc && curp){ 
+            const instanceCliente = new Cliente(nombreCliente,rfc,curp, new Date(), cuentas );
+            const cuenta = instanceCliente.agregarCuenta(tipoCuenta); 
             await DataStorager.persistirUsuario(usuario);
-            res.status(201).send();
+            res.status(201).send(cuenta);
         }else{
             res.status(400).send({"error": "El cliente no existe"});
         }
@@ -27,16 +28,23 @@ router.post('/cuenta', auth, async (req,res)=>{
     }
 });
 
-//Agregar transaccion a una cuenta específica
+
+
+
+//Agregar transaccion a una cuenta específica*
 router.post('/cuenta/transaccion',auth, async (req,res)=>{
     const { nombreUsuario } = req.params;
     const { nombreCliente, idCuenta,cantidad, concepto, tipoDeTransaccion } = req.body;
     
     const usuario = await DataStorager.retornarUsuario(nombreUsuario);
     if(usuario && nombreCliente && cantidad && concepto && tipoDeTransaccion ){
-        const cliente = usuario.retornarCliente(nombreCliente) ;
-        const cuenta = cliente?.retornarCuenta(idCuenta);
-        if(cuenta){
+ 
+        const { rfc, curp, cuentas} = usuario.retornarCliente(nombreCliente) as Cliente;
+
+        if(rfc && curp){ 
+            const instanceCliente = new Cliente(nombreCliente,rfc,curp, new Date(), cuentas );
+            const {tipoDeCuenta, transacciones} = instanceCliente.retornarCuenta(idCuenta);
+            const cuenta = new Cuenta(tipoDeCuenta, transacciones);
             const parametros: ParametrosDeTransaccion = {
                 cantidad: +cantidad,
                 concepto: concepto,
@@ -44,9 +52,9 @@ router.post('/cuenta/transaccion',auth, async (req,res)=>{
             } 
             cuenta.agregarTransaccion(parametros);
             await DataStorager.persistirUsuario(usuario);
-            res.status(200).send();
+            res.status(201).send();
         }else{
-            res.status(400).send({"error": "error al identificar cuenta "});
+            res.status(400).send({"error": "El cliente no existe"});
         }
         
     }else{
@@ -55,16 +63,55 @@ router.post('/cuenta/transaccion',auth, async (req,res)=>{
 });
 
 
-//obtener todas las transacciones del cliente, independientemente de su cuenta. Filtro por fechas
-router.get('/transacciones',auth, ()=>{
-
+//regresar todas las cuentas del cliente.
+router.get('/cuentas',auth, async(req,res)=>{
+    const { nombreUsuario} = req.params; 
+    const { nombreCliente } = req.query;
+    const usuario = await DataStorager.retornarUsuario(nombreUsuario); 
+    if(usuario){ 
+        const cliente = usuario.retornarCliente(nombreCliente as string);
+        if(cliente){
+            res.status(200).send(cliente.cuentas);
+        }else{
+            res.status(400).send({"error":"Cliente no encontrado"});
+        }
+        
+    }else{
+        res.status(400).send({"error": "error al identificar cuenta "});
+    }
 });
 
+//obtener todas las transacciones del cliente, independientemente de su cuenta. Filtro por fechas*
+router.get('/transacciones',auth, async(req,res)=>{
+    const nombreUsuario = req.params.nombreUsuario;
+    const usuario = await DataStorager.retornarUsuario(nombreUsuario);
+    let transacciones: Transaccion[] = [];
+    if(usuario){
+        usuario.clientes.forEach((cliente)=>{
+            cliente.cuentas.forEach(cuenta=>{
+                transacciones = [...transacciones, ...cuenta.transacciones]
+            })
+        })
 
+    }
+    
+    res.status(200).send(transacciones);
+    
+});
 
-//obtener transacciones por cuenta. Filtro por fecha
-router.get('/cuenta/transacciones', auth, ()=>{
+//obtener transacciones por cuenta. Filtro por fecha*
+router.get('/cuenta/transacciones', auth, async (req,res)=>{
+    const { nombreUsuario} = req.params; 
+    const { nombreCliente, idCuenta } = req.query;
 
+    const usuario = await DataStorager.retornarUsuario(nombreUsuario);
+    if(usuario && nombreCliente && idCuenta ){
+        const {cuentas} = usuario.retornarCliente(nombreCliente as string) as Cliente;
+        const cuentaFiltrada = cuentas.filter( cuenta => cuenta.id=== idCuenta );
+        res.status(201).send(cuentaFiltrada[0].transacciones );
+    }else{
+        res.status(400).send({"error": "Datos insuficientes"});
+    }
 });
 
 
