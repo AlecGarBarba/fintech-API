@@ -1,12 +1,12 @@
-import {TipoTransaccion} from '../types/types';
+import {TipoDeTransaccion} from '../types/types';
 
 export default class Transaccion{
     id:string;
     cantidad:number;
     concepto:string;
-    tipoTransaccion: TipoTransaccion;
+    tipoTransaccion: TipoDeTransaccion;
     fechaTransaccion: Date;
-    constructor(id:string, cantidad:number, concepto:string, tipoTransaccion: TipoTransaccion, fechaTransaccion?: Date){
+    constructor(id:string, cantidad:number, concepto:string, tipoTransaccion: TipoDeTransaccion, fechaTransaccion?: Date){
         this.id=id;
         this.cantidad=cantidad;
         this.concepto=concepto;
