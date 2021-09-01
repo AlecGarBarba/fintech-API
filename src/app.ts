@@ -4,7 +4,7 @@ import routerClientes from './routes/routerClientes';
 function main(): void {
     const app = express();
 app.use(express.json());
-    app.use('/user', routerUsuario);
+    app.use('/usuario', routerUsuario);
     app.use('/clientes', routerClientes);
 
     app.get('/', (_, res: Response)=>{
