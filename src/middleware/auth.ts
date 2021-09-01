@@ -1,22 +1,16 @@
-import { Request, Response } from 'express';
-import md5 from 'md5';
-import crypto from 'crypto';
-
-import DataStorager from 'src/models/DataStorager';
+import { Request, Response } from 'express'; 
+import jwt from 'jsonwebtoken';
+//import DataStorager from '../models/DataStorager';
 
 export const auth = async (req: Request, res: Response, next: Function)=>{
     try{
-        const md5 = req.header('Authorization')?.replace('Bearer ','');
-        const nombreUsuario = req.header('user'); 
-        const user = await DataStorager.retornarUsuario(''+nombreUsuario);
-        if(user && user.password == md5 ){
-            next();
-        }else{
-            throw new Error();
-        }
-        
+        const token = req.header('Authorization')?.replace('Bearer ','');
+        const decoded = jwt.verify(token!, process.env.JWT_SECRET as jwt.Secret) as jwt.JwtPayload;
+        const {nombre} = decoded;
+        req.params.nombreUsuario = nombre;
+       next(); 
     }catch(e){
-        res.status(401).send({error: "Error de autenticación"})
+        res.status(401).send({error: `Error de autenticación: ${e.message}`});
     }
 }
  
