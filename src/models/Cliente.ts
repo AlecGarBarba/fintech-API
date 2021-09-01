@@ -1,53 +1,100 @@
 import Transaccion from "./Transaccion";
-import {ParametrosTransaccion} from '../types/types';
-import { v4 as uuid} from 'uuid';
+import {ParametrosDeTransaccion, TipoDeCuenta} from '../types/types';
+import Cuenta from './Cuenta'; 
 
 export default class Cliente{ 
 
     nombreCliente: string;
+    rfc: string;
+    curp:string;
     fechaRegistro: Date;
-    transacciones: Transaccion[];
+    cuentas: Cuenta[];
 
-    constructor(nombreCliente: string, fechaRegistro?: Date, transacciones?: Transaccion[]){
+    constructor(nombreCliente: string, rfc:string, curp:string, fechaRegistro?: Date, cuentas?: Cuenta[]){
         this.nombreCliente = nombreCliente;
+        this.rfc=rfc;
+        this.curp=curp;
         if(fechaRegistro){
             this.fechaRegistro = fechaRegistro;
         }else{
             this.fechaRegistro = new Date();
         }
-        if(transacciones){
-            this.transacciones = transacciones;
+        if(cuentas){
+            this.cuentas = cuentas;
         }else{
-            this.transacciones = [];
+            this.cuentas = [];
         }
     }
 
-    agregarTransaccion(parametros: ParametrosTransaccion){
-        const uid = uuid();
-        const {cantidad, concepto, tipoTransaccion, fecha} = parametros;
-        const transaccion = new Transaccion(''+uid, cantidad,concepto, tipoTransaccion, fecha);
-        this.transacciones.push(transaccion);
+    agregarCuenta(tipoDeCuenta: TipoDeCuenta): Cuenta{
+        const nuevaCuenta = new Cuenta(tipoDeCuenta);
+        this.cuentas.push(nuevaCuenta); 
+        return nuevaCuenta;
     }
 
-    listarTransacciones():Transaccion[]{
-        return this.transacciones;
+    eliminarCuenta(idCuenta:string):boolean{
+        let isRemoved:boolean = false;
+        this.cuentas = this.cuentas.filter((cuenta)=> {
+            if(cuenta.id == idCuenta){
+                isRemoved = true;
+                return false;
+            }else{
+                return true;
+            }
+        }); 
+        return isRemoved
     }
 
-    listarTransaccionesDesde(inicio: Date):Transaccion[]{
-        return this.transacciones.filter(transaccion=>{
-            return transaccion.fechaTransaccion >= inicio;
-        });
+    retornarCuenta(idCuenta:string):Cuenta{
+        return this.cuentas.filter(cuenta => cuenta.id === idCuenta)[0];
     }
 
-    listarTransaccionesHasta(fin: Date):Transaccion[]{
-        return this.transacciones.filter(transaccion=>{
-            return transaccion.fechaTransaccion <= fin;
-        });
+    listarCuentas():Cuenta[]{
+        return this.cuentas;
     }
 
-    listarTransaccionesPeriodo(inicio: Date, fin:Date):Transaccion[]{
-        return this.transacciones.filter(transaccion=>{
-            return transaccion.fechaTransaccion >= inicio && transaccion.fechaTransaccion <= fin;
-        });
+    agregarTransaccionCuenta( idCuenta: string,  parametros: ParametrosDeTransaccion):boolean{
+        const cuenta = this.retornarCuenta(idCuenta);
+        if(cuenta){ 
+            cuenta.agregarTransaccion(parametros)
+            return true;
+        }
+        return false; 
+    }
+
+    listarTransaccionesCuenta(idCuenta: string):Transaccion[]{
+        let transaccionesDeCuenta:Transaccion[] = [];
+        const cuenta = this.retornarCuenta(idCuenta); 
+        if(cuenta){
+            transaccionesDeCuenta = cuenta.listarTransacciones();
+        } 
+        return transaccionesDeCuenta;
+    }
+
+    listarTransaccionesCuentaDesde(idCuenta: string, inicio: Date):Transaccion[]{
+        let transaccionesDeCuenta:Transaccion[] = [];
+        const cuenta = this.retornarCuenta(idCuenta); 
+        if(cuenta){
+            transaccionesDeCuenta = cuenta.listarTransaccionesDesde(inicio);
+        } 
+        return transaccionesDeCuenta;
+    }
+
+    listarTransaccionesCuentaHasta(idCuenta: string, fin: Date):Transaccion[]{
+        let transaccionesDeCuenta:Transaccion[] = [];
+        const cuenta = this.retornarCuenta(idCuenta); 
+        if(cuenta){
+            transaccionesDeCuenta = cuenta.listarTransaccionesHasta(fin);
+        } 
+        return transaccionesDeCuenta;
+    }
+
+    listarTransaccionesCuentaPeriodo(idCuenta:string, inicio: Date, fin:Date):Transaccion[]{
+        let transaccionesDeCuenta:Transaccion[] = [];
+        const cuenta = this.retornarCuenta(idCuenta); 
+        if(cuenta){
+            transaccionesDeCuenta = cuenta.listarTransaccionesPeriodo(inicio,fin);
+        } 
+        return transaccionesDeCuenta;
     } 
 }

@@ -1,11 +1,16 @@
-export enum TipoTransaccion{
-    ventaCredito,
-    ventaEfectivo,
+export enum TipoDeTransaccion{
+    aFavor,
+    enContra,
 }
 
-export type ParametrosTransaccion={
+export enum TipoDeCuenta{
+    debito,
+    credito
+}
+
+export type ParametrosDeTransaccion={
     cantidad:number,
     concepto:string,
-    tipoTransaccion:TipoTransaccion,
+    tipoDeTransaccion:TipoDeTransaccion,
     fecha?: Date,
 }
