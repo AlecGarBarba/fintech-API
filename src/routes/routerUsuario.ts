@@ -2,7 +2,7 @@ import { Router } from "express";
 import jwt from 'jsonwebtoken';
 
 import DataStorager from "../models/DataStorager";
-import Usuario from "../models/Usuario";
+import Usuario from "../models/Usuario"; 
 
 import { auth } from '../middleware/auth';
 
@@ -37,11 +37,40 @@ router.post('/login', async (req,res)=>{
 });
 
 //Crear cliente
-router.post('/cliente',auth, ()=>{
-
+router.post('/cliente',auth, async (req,res)=>{
+    const {nombreCliente, rfc, curp  } = req.body;
+    const nombreUsuario = req.params.nombreUsuario;
+    const usuario = await DataStorager.retornarUsuario(nombreUsuario);
+    if(nombreCliente && rfc && curp && usuario){
+        try{
+            usuario.agregarCliente(nombreCliente,rfc,curp); 
+            await DataStorager.persistirUsuario(usuario);
+            res.status(201).send();
+        }catch(e){
+            res.status(500).send({"error": `Error de servidor: ${e.message}`});
+        }
+        
+    }else{
+        res.status(400).send({"error": "Datos inválidos o faltantes para la creación de un nuevo cliente"});
+    }
 });
+
 //Eliminar cliente
-router.delete('/cliente', ()=>{
+router.delete('/cliente',auth, async (req,res)=>{
+    const {nombreCliente } = req.body;
+    const nombreUsuario = req.params.nombreUsuario;
+    const usuario = await DataStorager.retornarUsuario(nombreUsuario);
+    if(usuario){
+        const isClienteEliminado = usuario.eliminarCliente(nombreCliente);
+        if(isClienteEliminado){
+            await DataStorager.persistirUsuario(usuario);
+            res.sendStatus(200);
+        }else{
+            res.status(400).send({"error": "El cliente a eliminar no existe."})
+        }
+    }else{
+        res.status(400).send({"error":"Usuario no encontrado"})
+    }
 
 });
 
