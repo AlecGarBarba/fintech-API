@@ -11,5 +11,14 @@ router.get('/', auth, ()=>{
 
 });
 
+
+//obtener todas las transacciones del cliente, independientemente de su cuenta
+router.get('/transacciones', ()=>{
+
+});
+
+//obtener 
+router.get('/cuenta')
+
 //Agregar transaccion específica al cliente.s
 router.post('/transaccion')
